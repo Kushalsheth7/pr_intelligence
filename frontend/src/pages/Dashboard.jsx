@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Activity, GitPullRequest, Plus, ArrowRight, Globe, Zap } from "lucide-react";
+import { Activity, GitPullRequest, Plus, ArrowRight, Globe, Zap, Trash2 } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -60,6 +60,26 @@ export default function Dashboard() {
       if (syncMessage.type !== "error") {
         setTimeout(() => setSyncMessage({ text: "", type: "" }), 5000);
       }
+    }
+  };
+
+  const handleDelete = async (e, id) => {
+    e.stopPropagation(); // Prevent navigating to the detail page
+    if (!window.confirm("Are you sure you want to stop tracking this repository? All synced data will be deleted.")) return;
+    
+    try {
+      const res = await fetch(`${API_BASE}/api/repositories/${id}`, {
+        method: "DELETE"
+      });
+      if (res.ok) {
+        // Remove the repo from the local state array instantly
+        setRepositories(repositories.filter(r => r.id !== id));
+      } else {
+        alert("Failed to delete repository.");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete repository.");
     }
   };
 
@@ -197,8 +217,17 @@ export default function Dashboard() {
                         {r.name}
                       </h3>
                     </div>
-                    <div className="bg-slate-50 p-2 rounded-lg text-slate-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors">
-                      <ArrowRight className="w-5 h-5" />
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => handleDelete(e, r.id)} 
+                        className="bg-slate-50 p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors z-20 relative shadow-sm hover:shadow-sm"
+                        title="Delete Repository"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                      <div className="bg-slate-50 p-2 rounded-lg text-slate-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-colors shadow-sm">
+                        <ArrowRight className="w-5 h-5" />
+                      </div>
                     </div>
                   </div>
                   

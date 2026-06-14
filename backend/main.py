@@ -186,3 +186,18 @@ def get_repository(repo_id: int, db: Session = Depends(database.get_db)):
         "pull_requests": pr_list[:100], # Send last 100
         "engineers": engineers
     }
+
+@app.delete("/api/repositories/{repo_id}")
+def delete_repository(repo_id: int, db: Session = Depends(database.get_db)):
+    repo = db.query(models.Repository).filter(models.Repository.id == repo_id).first()
+    if not repo:
+        raise HTTPException(status_code=404, detail="Repository not found")
+        
+    # Delete associated PRs first to maintain referential integrity
+    db.query(models.PullRequest).filter(models.PullRequest.repository_id == repo_id).delete()
+    
+    # Delete the repository
+    db.delete(repo)
+    db.commit()
+    return {"success": True}
+
