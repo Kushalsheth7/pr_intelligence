@@ -17,6 +17,29 @@ To optimize for both immediate UI responsiveness and future big-data engineering
 - **Database:** SQLite managed via SQLAlchemy ORM (designed for easy migration to PostgreSQL).
 - **Data Ingestion:** GitHub GraphQL API, fetching nested PR data, authors, and comments in a single optimized network request to prevent rate-limiting.
 
+### Architecture Diagram
+```mermaid
+sequenceDiagram
+    participant UI as React Frontend
+    participant API as FastAPI Backend
+    participant DB as SQLite / SQLAlchemy
+    participant GH as GitHub GraphQL API
+
+    UI->>API: POST /api/sync (owner, repo, token)
+    API->>GH: Fetch 100 recent PRs & authors
+    GH-->>API: Return nested JSON payload
+    API->>DB: Upsert repositories, authors, PRs
+    DB-->>API: Confirm success
+    API-->>UI: Sync Complete
+
+    UI->>API: GET /api/repositories/{id}
+    API->>DB: Query PRs for repository
+    DB-->>API: Raw PR data
+    Note over API: Calculate Avg Merge Time<br/>& Aggregate Engineer Output
+    API-->>UI: Return calculated metrics
+    Note over UI: Render Recharts & Tables
+```
+
 ---
 
 ## 🚀 Quick Start (Local Development)

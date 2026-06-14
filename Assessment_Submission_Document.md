@@ -25,6 +25,13 @@ To optimize for both immediate developer velocity and future data-engineering sc
 - **Data Fetching:** GitHub GraphQL API.
 
 **Architecture Flow:**
+```mermaid
+flowchart TD
+    Client[React SPA Dashboard] <--> |REST API| Backend(FastAPI)
+    Backend --> |GraphQL| GitHub[GitHub API]
+    Backend <--> |SQLAlchemy| DB[(SQLite Database)]
+```
+
 1. **The Client:** A Single Page Application (SPA) that provides a global view of all tracked repositories and drill-down dashboards for individual repos.
 2. **The API Layer:** FastAPI exposes RESTful endpoints (`/api/sync`, `/api/repositories`). Pydantic models ensure strict request/response validation.
 3. **The Sync Engine:** When triggered, the backend uses Python's `requests` library to query the GitHub GraphQL API. It fetches PR metadata, nested author objects, and comment counts in a single efficient network call, completely avoiding the N+1 problem common with GitHub's REST API.
